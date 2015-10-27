@@ -1,2 +1,2 @@
-# girlphy
-Placeholder Images from girls for every case
+# Girlphy
+Placeholder images for every time you need girls
