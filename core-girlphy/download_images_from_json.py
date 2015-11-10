@@ -35,8 +35,8 @@ if args.directory:
         while True:
             worker_data = q.get()
             parsed_url = urlparse.urlparse(worker_data['remote_url'])
-            data = read_response(parsed_url)
             image_name = parsed_url.path.replace("/", "_")
+            data = read_response(parsed_url)
             write_to_image(data, worker_data['local_folder'], image_name)
             q.task_done()
 
@@ -46,7 +46,7 @@ if args.directory:
 
         # set status
         download_counter+=1
-        print "\nDownloading image: %s" % image_name
+        print "\nDownloading image %s of %s: %s" % (download_counter, json_counter, image_name)
         update_progress(float(math.ceil(float(download_counter)/float(json_counter)*100))/100.0)
 
         # write to jpg
@@ -89,12 +89,15 @@ if args.directory:
                         user_media = json_object["user"]["media"]
                         if user_media.get("nodes"):
                             for node in user_media["nodes"]:
-                                data = {
-                                    'remote_url': node["display_src"],
-                                    'local_folder': local_directory
-                                }
-                                json_counter+=1
-                                q.put(data)
+                                parsed_url = urlparse.urlparse(node["display_src"])
+                                image_name = parsed_url.path.replace("/", "_")
+                                if not os.path.isfile(local_directory+'/'+image_name):
+                                    data = {
+                                        'remote_url': node["display_src"],
+                                        'local_folder': local_directory
+                                    }
+                                    json_counter+=1
+                                    q.put(data)
         q.join()
 
         update_progress(10)
