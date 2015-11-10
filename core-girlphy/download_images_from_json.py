@@ -9,7 +9,7 @@ if args.directory:
 
     json_counter = 0
     download_counter = 0
-    concurrent = 800
+    concurrent = 200
     directory = args.directory
 
     def update_progress(progress):
@@ -51,7 +51,7 @@ if args.directory:
 
         # write to jpg
         f = open(local_folder+"/"+image_name,'w')
-        f.write(data)
+        f.write(str(data))
         f.close()
 
     def read_response(parsed_url):

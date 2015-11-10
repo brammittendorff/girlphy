@@ -10,7 +10,7 @@ if args.url_list and args.write_to_dir:
 
     url_counter = 0
     download_counter = 0
-    concurrent = 250
+    concurrent = 200
     directory = args.write_to_dir
 
     def update_progress(progress):
@@ -88,7 +88,6 @@ if args.url_list and args.write_to_dir:
             name = filter(None, parsed_url.path.split('/'))[0]
             jsonfile = args.write_to_dir+name+'/.'+name+'.json'
             # should include time check to for the future
-            print jsonfile
             if not os.path.isfile(jsonfile):
                 q.put(url.strip())
                 url_counter+=1
