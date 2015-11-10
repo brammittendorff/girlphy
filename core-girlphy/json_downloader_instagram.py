@@ -1,6 +1,6 @@
 import argparse, sys, os, httplib, re, urlparse, json, io, pprint, threading, Queue, math
-parser = argparse.ArgumentParser(description='Json downloader for instagram')
 
+parser = argparse.ArgumentParser(description='Json downloader for instagram')
 parser.add_argument('-l', '--url-list', metavar='file', type=argparse.FileType('r'), help='the list of urls to load', nargs='?', required=True)
 parser.add_argument('-d', '--write-to-dir', help='the dir to write the json files to', nargs='?', required=True)
 
