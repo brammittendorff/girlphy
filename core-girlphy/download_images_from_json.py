@@ -9,7 +9,7 @@ if args.directory:
 
     json_counter = 0
     download_counter = 0
-    concurrent = 800
+    concurrent = 200
     directory = args.directory
 
     def update_progress(progress):
