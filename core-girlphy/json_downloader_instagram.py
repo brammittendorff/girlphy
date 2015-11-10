@@ -59,7 +59,7 @@ if args.url_list and args.write_to_dir:
 
     def write_to_json(response_data, parsed_url):
         global download_counter
-        name = parsed_url.path.replace('/', '').replace("\r\n",'')
+        name = filter(None, parsed_url.path.split('/'))[0]
         # create directory
         if not os.path.isdir(args.write_to_dir+name):
             os.makedirs(args.write_to_dir+name)
@@ -84,18 +84,19 @@ if args.url_list and args.write_to_dir:
     try:
         url_counter=0
         for url in args.url_list:
-            url_counter+=1
             parsed_url = urlparse.urlparse(url)
-            name = parsed_url.path.replace('/', '').replace("\r\n",'')
+            name = filter(None, parsed_url.path.split('/'))[0]
             jsonfile = args.write_to_dir+name+'/.'+name+'.json'
             # should include time check to for the future
+            print jsonfile
             if not os.path.isfile(jsonfile):
                 q.put(url.strip())
+                url_counter+=1
 
         q.join()
 
         update_progress(10)
-        print("Total urls: %s" % url_counter)
+        print("Total urls tried: %s" % url_counter)
         print("Total downloaded urls: %s" % download_counter)
 
     except KeyboardInterrupt:

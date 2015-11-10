@@ -9,7 +9,7 @@ if args.directory:
 
     json_counter = 0
     download_counter = 0
-    concurrent = 200
+    concurrent = 800
     directory = args.directory
 
     def update_progress(progress):
@@ -101,8 +101,8 @@ if args.directory:
         q.join()
 
         update_progress(10)
-        print("Total json files: %s" % json_counter)
-        print("Total images downloaded: %s" % download_counter)
+        print("Total json files tried: %s" % json_counter)
+        print("Total images downloaded from json: %s" % download_counter)
 
     except KeyboardInterrupt:
         sys.exit(1)
