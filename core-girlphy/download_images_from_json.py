@@ -54,6 +54,8 @@ if args.directory:
         f.write(str(data))
         f.close()
 
+        return True
+
     def read_response(parsed_url):
         try:
             conn = httplib.HTTPSConnection(parsed_url.netloc)
