@@ -10,7 +10,7 @@ if args.url_list and args.write_to_dir:
 
     url_counter = 0
     download_counter = 0
-    concurrent = 250
+    concurrent = 200
     directory = args.write_to_dir
 
     def update_progress(progress):
