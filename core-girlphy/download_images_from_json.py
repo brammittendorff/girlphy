@@ -68,7 +68,7 @@ if args.directory:
                     return data
             else:
                 print "Error with reason: " + res.reason + " in url: %s" % parsed_url.path
-                return None
+            return None
         except:
             print "Something went wrong with url: %s" % parsed_url.path
 

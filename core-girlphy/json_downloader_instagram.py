@@ -53,7 +53,7 @@ if args.url_list and args.write_to_dir:
                     return data
             else:
                 print "Error with reason: " + res.reason + " in url: %s" % workerurl
-                return None
+            return None
         except:
             print "Something went wrong with url: %s" % workerurl
 
@@ -75,6 +75,8 @@ if args.url_list and args.write_to_dir:
                         print "\nDownloading instagram profile: %s" % name
                         update_progress(float(math.ceil(float(download_counter)/float(url_counter)*100))/100.0)
                         json.dump(strip2[0], outfile)
+                        return True
+        return False
 
     q = Queue.Queue(concurrent * 2)
     for i in range(concurrent):
