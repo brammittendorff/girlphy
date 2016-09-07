@@ -4,7 +4,11 @@ Placeholder images for every time you need girls
 ## Core
 This could be the core of girlphy
 
-### Step 1 download json files from instagram
+## Step 1 clear the old json files
+
+	rm -rf core-girlphy/directory/*/.*.json
+
+### Step 2 download json files from instagram
 
 	python core-girlphy/json_downloader_instagram.py -l urllist.txt -d core-girlphy/directory/
 
@@ -12,14 +16,10 @@ or with timing
 
 	time python core-girlphy/json_downloader_instagram.py -l urllist.txt -d core-girlphy/directory/
 
-### Step 2 open json files and download the images
+### Step 3 open json files and download the images
 
 	python core-girlphy/download_images_from_json.py -d core-girlphy/directory/
 
 or with timing
 
 	time python core-girlphy/download_images_from_json.py -d core-girlphy/directory/
-
-## Update images
-
-	rm -rf core-girlphy/directory/*/.*.json
