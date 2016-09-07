@@ -6,19 +6,19 @@ This could be the core of girlphy
 
 ### Step 1 download json files from instagram
 
-	python core-girlphy/json_downloader_instagram.py -l urllist.txt -d directory/
+	python core-girlphy/json_downloader_instagram.py -l urllist.txt -d core-girlphy/directory/
 
-or
+or with timing
 
-	time python core-girlphy/json_downloader_instagram.py -l urllist.txt -d directory/
+	time python core-girlphy/json_downloader_instagram.py -l urllist.txt -d core-girlphy/directory/
 
 ### Step 2 open json files and download the images
 
-	python core-girlphy/download_images_from_json.py -d directory/
+	python core-girlphy/download_images_from_json.py -d core-girlphy/directory/
 
-or
+or with timing
 
-	time python core-girlphy/download_images_from_json.py -d directory/
+	time python core-girlphy/download_images_from_json.py -d core-girlphy/directory/
 
 ## Update images
 
