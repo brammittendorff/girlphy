@@ -1,4 +1,12 @@
-import argparse, sys, os, httplib, re, urlparse, json, io, pprint, threading, Queue, math
+import argparse
+import sys
+import os
+import httplib
+import urlparse
+import json
+import threading
+import Queue
+import math
 
 parser = argparse.ArgumentParser(description='Image downloader from instagram json files')
 parser.add_argument('-d', '--directory', help='the directory where the json files are stored', nargs='?', required=True)
@@ -19,7 +27,7 @@ if args.directory:
             progress = float(progress)
         if not isinstance(progress, float):
             progress = 0
-            status = "error: progress var must be float\r\n"
+            status = "Error: progress var must be float\r\n"
         if progress < 0:
             progress = 0
             status = "Halt...\r\n"
@@ -34,43 +42,43 @@ if args.directory:
     def create_worker():
         while True:
             worker_data = q.get()
-            parsed_url = urlparse.urlparse(worker_data['remote_url'])
-            image_name = parsed_url.path.replace("/", "_")
-            data = read_response(parsed_url)
-            write_to_image(data, worker_data['local_folder'], image_name)
+            remote_parsed_url = urlparse.urlparse(worker_data['remote_url'])
+            remote_image_name = remote_parsed_url.path.replace("/", "_")
+            result_data = read_response(remote_parsed_url)
+            write_to_image(result_data, worker_data['local_folder'], remote_image_name)
             q.task_done()
 
-    def write_to_image(data, local_folder, image_name):
+    def write_to_image(write_data, local_folder, write_image_name):
         global download_counter
         global json_counter
 
         # set status
         download_counter+=1
-        print "\nDownloading image %s of %s: %s" % (download_counter, json_counter, image_name)
+        print "\nDownloading image %s of %s: %s" % (download_counter, json_counter, write_image_name)
         update_progress(float(math.ceil(float(download_counter)/float(json_counter)*100))/100.0)
 
         # write to jpg
-        f = open(local_folder+"/"+image_name,'w')
-        f.write(str(data))
-        f.close()
+        file_open = open(local_folder+"/"+write_image_name, 'w')
+        file_open.write(str(write_data))
+        file_open.close()
 
         return True
 
-    def read_response(parsed_url):
+    def read_response(read_parsed_url):
         try:
-            conn = httplib.HTTPSConnection(parsed_url.netloc)
-            conn.request('GET', parsed_url.path)
+            conn = httplib.HTTPSConnection(read_parsed_url.netloc)
+            conn.request('GET', read_parsed_url.path)
             res = conn.getresponse()
-            data = res.read()
+            read_data = res.read()
             conn.close()
             if 'OK' in res.reason:
-                if len(data) > 0:
-                    return data
+                if len(read_data) > 0:
+                    return read_data
             else:
                 print "Error with reason: " + res.reason + " in url: %s" % parsed_url.path
             return None
-        except:
-            print "Something went wrong with url: %s" % parsed_url.path
+        except (httplib.HTTPException) as e:
+            print "Something went wrong with url: %s" % e
 
     q = Queue.Queue(concurrent * 2)
     for i in range(concurrent):
