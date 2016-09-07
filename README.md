@@ -1,10 +1,12 @@
 # Girlphy
+
 Placeholder images for every time you need girls
 
 ## Core
-This could be the core of girlphy
 
-## Step 1 clear the old json files
+This could be the 'downloading' core of girlphy
+
+### Step 1 clear the old json files
 
 	rm -rf core-girlphy/directory/*/.*.json
 
