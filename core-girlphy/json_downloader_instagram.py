@@ -67,7 +67,9 @@ if args.url_list and args.write_to_dir:
 
     def write_to_json(response_data, write_parsed_url):
         global download_counter
-        name = list(write_parsed_url.path.split('/'))[0]
+
+        # TODO: find a better way to filter() an array
+        name = write_parsed_url.path.split('/')[1]
         # create directory
         if not os.path.isdir(args.write_to_dir+name):
             os.makedirs(args.write_to_dir+name)
@@ -95,7 +97,8 @@ if args.url_list and args.write_to_dir:
         url_counter=0
         for url in args.url_list:
             parsed_url = urlparse.urlparse(url)
-            file_name = list(parsed_url.path.split('/'))[0]
+            # TODO: find a better way to filter() an array for filenames
+            file_name = parsed_url.path.split('/')[1]
             jsonfile = args.write_to_dir+file_name+'/.'+file_name+'.json'
             # should include time check to for the future
             if not os.path.isfile(jsonfile):
