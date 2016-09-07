@@ -1,4 +1,12 @@
-import argparse, sys, os, httplib, re, urlparse, json, io, pprint, threading, Queue, math
+import argparse
+import sys
+import os
+import httplib
+import urlparse
+import json
+import threading
+import Queue
+import math
 
 parser = argparse.ArgumentParser(description='Json downloader for instagram')
 parser.add_argument('-l', '--url-list', metavar='file', type=argparse.FileType('r'), help='the list of urls to load', nargs='?', required=True)
@@ -20,7 +28,7 @@ if args.url_list and args.write_to_dir:
             progress = float(progress)
         if not isinstance(progress, float):
             progress = 0
-            status = "error: progress var must be float\r\n"
+            status = "Error: progress var must be float\r\n"
         if progress < 0:
             progress = 0
             status = "Halt...\r\n"
@@ -34,17 +42,17 @@ if args.url_list and args.write_to_dir:
 
     def create_worker():
         while True:
-            url = q.get()
-            parsed_url = urlparse.urlparse(url)
-            data = read_response(url, parsed_url)
+            worker_url = q.get()
+            worker_parsed_url = urlparse.urlparse(worker_url)
+            data = read_response(worker_url, worker_parsed_url)
             if data:
-                write_to_json(data, parsed_url)
+                write_to_json(data, worker_parsed_url)
             q.task_done()
 
-    def read_response(workerurl, parsed_url):
+    def read_response(workerurl, read_parsed_url):
         try:
-            conn = httplib.HTTPSConnection(parsed_url.netloc)
-            conn.request('GET', parsed_url.path)
+            conn = httplib.HTTPSConnection(read_parsed_url.netloc)
+            conn.request('GET', read_parsed_url.path)
             res = conn.getresponse()
             data = res.read()
             conn.close()
@@ -54,12 +62,12 @@ if args.url_list and args.write_to_dir:
             else:
                 print "Error with reason: " + res.reason + " in url: %s" % workerurl
             return None
-        except:
-            print "Something went wrong with url: %s" % workerurl
+        except (httplib.HTTPException) as e:
+            print "Something went wrong with url: %s" % e
 
-    def write_to_json(response_data, parsed_url):
+    def write_to_json(response_data, write_parsed_url):
         global download_counter
-        name = filter(None, parsed_url.path.split('/'))[0]
+        name = list(write_parsed_url.path.split('/'))[0]
         # create directory
         if not os.path.isdir(args.write_to_dir+name):
             os.makedirs(args.write_to_dir+name)
@@ -87,8 +95,8 @@ if args.url_list and args.write_to_dir:
         url_counter=0
         for url in args.url_list:
             parsed_url = urlparse.urlparse(url)
-            name = filter(None, parsed_url.path.split('/'))[0]
-            jsonfile = args.write_to_dir+name+'/.'+name+'.json'
+            file_name = list(parsed_url.path.split('/'))[0]
+            jsonfile = args.write_to_dir+file_name+'/.'+file_name+'.json'
             # should include time check to for the future
             if not os.path.isfile(jsonfile):
                 q.put(url.strip())
