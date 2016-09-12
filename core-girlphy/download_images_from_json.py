@@ -58,8 +58,9 @@ if args.directory:
         update_progress(float(math.ceil(float(download_counter)/float(json_counter)*100))/100.0)
 
         # write to jpg
-        file_open = open(local_folder+"/"+write_image_name, 'w')
-        file_open.write(str(write_data))
+        file_open = open(local_folder+"/"+write_image_name, 'wb', buffering=0)
+        file_open.write(write_data)
+        file_open.flush()
         file_open.close()
 
         return True
