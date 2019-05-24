@@ -45,7 +45,8 @@ if args.directory:
             remote_parsed_url = urlparse.urlparse(worker_data['remote_url'])
             remote_image_name = remote_parsed_url.path.replace("/", "_")
             result_data = read_response(remote_parsed_url)
-            write_to_image(result_data, worker_data['local_folder'], remote_image_name)
+            if result_data:
+                write_to_image(result_data, worker_data['local_folder'], remote_image_name)
             q.task_done()
 
     def write_to_image(write_data, local_folder, write_image_name):
@@ -68,7 +69,7 @@ if args.directory:
     def read_response(read_parsed_url):
         try:
             conn = httplib.HTTPSConnection(read_parsed_url.netloc)
-            conn.request('GET', read_parsed_url.path)
+            conn.request('GET', read_parsed_url.path + "?" + read_parsed_url.query)
             res = conn.getresponse()
             read_data = res.read()
             conn.close()
@@ -97,14 +98,14 @@ if args.directory:
                     f.close()
                     # load image urls from json
                     for json_object in json.loads(json.loads(filedata))["entry_data"]["ProfilePage"]:
-                        user_media = json_object["user"]["media"]
-                        if user_media.get("nodes"):
-                            for node in user_media["nodes"]:
-                                parsed_url = urlparse.urlparse(node["display_src"])
+                        user_media = json_object['graphql']['user']['edge_owner_to_timeline_media']
+                        if user_media.get("edges"):
+                            for node in user_media["edges"]:
+                                parsed_url = urlparse.urlparse(node['node']["display_url"])
                                 image_name = parsed_url.path.replace("/", "_")
                                 if not os.path.isfile(local_directory+'/'+image_name):
                                     data = {
-                                        'remote_url': node["display_src"],
+                                        'remote_url': node['node']["display_url"],
                                         'local_folder': local_directory
                                     }
                                     json_counter+=1
