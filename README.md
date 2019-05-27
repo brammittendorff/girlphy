@@ -2,9 +2,9 @@
 
 Placeholder images for every time you need girls
 
-## Core
+## Core download images from instagram
 
-This could be the 'downloading' core of girlphy
+Run the following steps to get the images
 
 ### Step 1 clear the old json files
 
@@ -24,11 +24,9 @@ python core-girlphy/json_downloader_instagram.py -l core-girlphy/urllist.txt -d 
 python core-girlphy/download_images_from_json.py -d core-girlphy/directory/
 ```
 
-## Classify downloaded images
+## Classify nudity in downloaded images
 
-### Classify nudity
-
-#### Requirements
+### Requirements
 
 - tensorflow
 - future
@@ -39,12 +37,12 @@ Download file:
 curl https://raw.githubusercontent.com/minto5050/NSFW-detection/master/retrained_graph.pb --output core-girlphy/models/retrained_graph.pb
 ```
 
-#### Run
+### Run
 
 ```
 python3 core-girlphy/detect_nudity.py -d output/ -g directory/
 ```
 
-### Classify age & gender
+## Classify age & gender in downloaded images
 
 
