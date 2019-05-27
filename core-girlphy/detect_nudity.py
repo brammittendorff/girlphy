@@ -22,7 +22,7 @@ if args.write_to_dir and args.get_from_dir:
     image_counter = 0
     scanned_counter = 0
     # make it safe
-    concurrent = 5
+    concurrent = 4
     write_to_directory = args.write_to_dir
     get_from_directory = args.get_from_dir
 
@@ -77,7 +77,8 @@ if args.write_to_dir and args.get_from_dir:
                     human_string = label_lines[node_id]
                     score = predictions[0][node_id]
                     if score > 0.90:
-                        shutil.copy2(image, cwd + '/core-girlphy/' + args.write_to_dir)
+                        if not os.path.isfile(cwd + '/core-girlphy/' + args.write_to_dir):
+                            shutil.copy2(image, cwd + '/core-girlphy/' + args.write_to_dir)
 
         scanned_counter+=1
         print("\nDetecting nudity in image: %s" % os.path.basename(image))
