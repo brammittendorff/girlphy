@@ -10,7 +10,6 @@ import math
 import glob
 import tensorflow as tf
 import shutil
-import gc
 
 parser = argparse.ArgumentParser(description='Detect Nudity for downloaded images')
 parser.add_argument('-d', '--write-to-dir', help='the dir to copy the image files to', nargs='?', required=True)
@@ -79,7 +78,6 @@ if args.write_to_dir and args.get_from_dir:
                     score = predictions[0][node_id]
                     if score > 0.90:
                         shutil.copy2(image, cwd + '/core-girlphy/' + args.write_to_dir)
-                        gc.collect()
 
         scanned_counter+=1
         print("\nDetecting nudity in image: %s" % os.path.basename(image))
