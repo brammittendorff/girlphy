@@ -22,7 +22,7 @@ if args.write_to_dir and args.get_from_dir:
     image_counter = 0
     scanned_counter = 0
     # make it safe
-    concurrent = 4
+    concurrent = 5
     write_to_directory = args.write_to_dir
     get_from_directory = args.get_from_dir
 
@@ -59,7 +59,7 @@ if args.write_to_dir and args.get_from_dir:
         if not os.path.isdir('core-girlphy/' + args.write_to_dir):
             os.makedirs('core-girlphy/' + args.write_to_dir)
 
-        if image:
+        if image and not os.path.isfile(cwd + '/core-girlphy/' + args.write_to_dir):
             image_data = tf.gfile.FastGFile(image, 'rb').read()
             label_lines = [line.rstrip() for line
                             in tf.gfile.GFile(cwd + '/core-girlphy/models/retrained_labels.txt')]
@@ -77,12 +77,10 @@ if args.write_to_dir and args.get_from_dir:
                     human_string = label_lines[node_id]
                     score = predictions[0][node_id]
                     if score > 0.90:
-                        if not os.path.isfile(cwd + '/core-girlphy/' + args.write_to_dir):
-                            shutil.copy2(image, cwd + '/core-girlphy/' + args.write_to_dir)
-
-        scanned_counter+=1
-        print("\nDetecting nudity in image: %s" % os.path.basename(image))
-        update_progress(float(math.ceil(float(scanned_counter)/float(image_counter)*100))/100.0)
+                        shutil.copy2(image, cwd + '/core-girlphy/' + args.write_to_dir)
+                        scanned_counter+=1
+                        print("\nDetecting nudity in image: %s" % os.path.basename(image))
+                        update_progress(float(math.ceil(float(scanned_counter)/float(image_counter)*100))/100.0)
 
     q = Queue(concurrent * 2)
     for i in range(concurrent):
