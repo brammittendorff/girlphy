@@ -9,6 +9,7 @@ import glob
 import tensorflow as tf
 import shutil
 import concurrent.futures
+from PIL import Image
 
 parser = argparse.ArgumentParser(description='Detect Nudity for downloaded images')
 parser.add_argument('-d', '--write-to-dir', help='the dir to copy the image files to', nargs='?', required=True)
@@ -26,6 +27,14 @@ if args.write_to_dir and args.get_from_dir:
 
     images_list = glob.glob(get_from_directory + '*/*.jpg')
 
+    def is_grey_scale(img_path):
+        img = Image.open(img_path).convert('RGB')
+        w,h = img.size
+        for i in range(w):
+            for j in range(h):
+                r,g,b = img.getpixel((i,j))
+                if r != g != b: return False
+        return True
 
     def detect_nudity(image):
         cwd = os.getcwd()
@@ -34,7 +43,8 @@ if args.write_to_dir and args.get_from_dir:
         if not os.path.isdir(args.write_to_dir):
             os.makedirs(args.write_to_dir)
 
-        if image and not os.path.isfile(args.write_to_dir + os.path.basename(image)):
+        # you can not detect nudity with an grayscale image
+        if image and not os.path.isfile(args.write_to_dir + os.path.basename(image)) and not is_grey_scale(image):
             image_data = tf.gfile.FastGFile(image, 'rb').read()
             label_lines = [line.rstrip() for line
                             in tf.gfile.GFile(cwd + '/core-girlphy/models/retrained_labels.txt')]
@@ -65,5 +75,3 @@ if args.write_to_dir and args.get_from_dir:
                 print('%r generated an exception: %s' % (url, exc))
             except KeyboardInterrupt:
                 sys.exit(1)
-            else:
-                print('%r page is %d bytes' % (url, len(data)))
