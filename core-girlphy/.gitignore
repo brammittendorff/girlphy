@@ -1,2 +1,4 @@
 urllist.txt
 directory/
+output/*
+models/retrained_graph.pb
