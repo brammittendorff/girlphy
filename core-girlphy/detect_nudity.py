@@ -31,7 +31,6 @@ if args.write_to_dir and args.get_from_dir:
 
 
     def detect_nudity(image):
-        global scanned_counter
         cwd = os.getcwd()
 
         # create directory
@@ -56,7 +55,6 @@ if args.write_to_dir and args.get_from_dir:
                     score = predictions[0][node_id]
                     if score > 0.90:
                         shutil.copy2(image, cwd + '/core-girlphy/' + args.write_to_dir)
-                        scanned_counter+=1
                         print("\nDetecting nudity in image: %s" % os.path.basename(image))
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
