@@ -10,6 +10,7 @@ import math
 import glob
 import tensorflow as tf
 import shutil
+import concurrent.futures
 
 parser = argparse.ArgumentParser(description='Detect Nudity for downloaded images')
 parser.add_argument('-d', '--write-to-dir', help='the dir to copy the image files to', nargs='?', required=True)
@@ -22,34 +23,12 @@ if args.write_to_dir and args.get_from_dir:
     image_counter = 0
     scanned_counter = 0
     # make it safe
-    concurrent = 5
     write_to_directory = args.write_to_dir
     get_from_directory = args.get_from_dir
 
-    def update_progress(progress):
-        barLength = 40
-        status = ""
-        if isinstance(progress, int):
-            progress = float(progress)
-        if not isinstance(progress, float):
-            progress = 0
-            status = "Error: progress var must be float\r\n"
-        if progress < 0:
-            progress = 0
-            status = "Halt...\r\n"
-        if progress >= 1:
-            progress = 1
-            status = "Done...\r\n"
-        block = int(round(barLength*progress))
-        text = "\rPercent: [{0}] {1}% {2}".format( "#"*block + "-"*(barLength-block), progress*100, status)
-        sys.stdout.write(text)
-        sys.stdout.flush()
+    cwd = os.getcwd()
+    images_list = glob.glob(cwd + '/core-girlphy/' + get_from_directory + '*/*.jpg')
 
-    def create_worker():
-        while True:
-            image = q.get()
-            detect_nudity(image)
-            q.task_done()
 
     def detect_nudity(image):
         global scanned_counter
@@ -72,7 +51,6 @@ if args.write_to_dir and args.get_from_dir:
                 predictions = sess.run(softmax_tensor, \
                         {'DecodeJpeg/contents:0': image_data})
                 top_k = predictions[0].argsort()[-len(predictions[0]):][::-1]
-
                 for node_id in top_k:
                     human_string = label_lines[node_id]
                     score = predictions[0][node_id]
@@ -80,25 +58,16 @@ if args.write_to_dir and args.get_from_dir:
                         shutil.copy2(image, cwd + '/core-girlphy/' + args.write_to_dir)
                         scanned_counter+=1
                         print("\nDetecting nudity in image: %s" % os.path.basename(image))
-                        update_progress(float(math.ceil(float(scanned_counter)/float(image_counter)*100))/100.0)
 
-    q = Queue(concurrent * 2)
-    for i in range(concurrent):
-        t = threading.Thread(target=create_worker)
-        t.daemon = True
-        t.start()
-    try:
-        image_counter = 0
-        cwd = os.getcwd()
-        images_list = glob.glob(cwd + '/core-girlphy/' + get_from_directory + '*/*.jpg')
-        for image in images_list:
-            q.put(image)
-            image_counter+=1
-        q.join()
-
-        update_progress(10)
-        print("Total images tried: %s" % image_counter)
-        print("Total downloaded urls: %s" % scanned_counter)
-
-    except KeyboardInterrupt:
-        sys.exit(1)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+        future_to_url = {executor.submit(detect_nudity, url): url for url in images_list}
+        for future in concurrent.futures.as_completed(future_to_url):
+            url = future_to_url[future]
+            try:
+                future.result()
+            except Exception as exc:
+                print('%r generated an exception: %s' % (url, exc))
+            except KeyboardInterrupt:
+                sys.exit(1)
+            else:
+                print('%r page is %d bytes' % (url, len(data)))
