@@ -100,7 +100,7 @@ if args.write_to_dir and args.get_from_dir:
                 shutil.copy2(image, args.write_to_dir)
                 print("\nDetecting Female in image: %s" % os.path.basename(image))
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
         future_to_url = {executor.submit(scan_gender_age, url): url for url in images_list}
         for future in concurrent.futures.as_completed(future_to_url):
             url = future_to_url[future]

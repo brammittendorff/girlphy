@@ -2,10 +2,8 @@ import argparse
 import sys
 import os
 import http.client
-from urllib.parse import urlparse, urlencode
 import json
 import threading
-from queue import Queue, deque
 import math
 import glob
 import tensorflow as tf
@@ -52,11 +50,12 @@ if args.write_to_dir and args.get_from_dir:
                 for node_id in top_k:
                     human_string = label_lines[node_id]
                     score = predictions[0][node_id]
-                    if score > 0.90:
+                    print(score)
+                    if score > 0.96:
                         shutil.copy2(image, args.write_to_dir)
                         print("\nDetecting nudity in image: %s" % os.path.basename(image))
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
         future_to_url = {executor.submit(detect_nudity, url): url for url in images_list}
         for future in concurrent.futures.as_completed(future_to_url):
             url = future_to_url[future]
