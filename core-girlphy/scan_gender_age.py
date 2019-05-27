@@ -41,7 +41,7 @@ if args.write_to_dir and args.get_from_dir:
     genderNet = cv.dnn.readNet(genderModel, genderProto)
     faceNet = cv.dnn.readNet(faceModel, faceProto)
 
-    images_list = glob.glob(cwd + '/core-girlphy/' + get_from_directory + '*/*.jpg')
+    images_list = glob.glob(get_from_directory + '*/*.jpg')
 
     def getFaceBox(net, frame, conf_threshold=0.7):
         frameOpencvDnn = frame.copy()
@@ -72,8 +72,8 @@ if args.write_to_dir and args.get_from_dir:
         padding = 20
 
         # create directory
-        if not os.path.isdir('core-girlphy/' + args.write_to_dir):
-            os.makedirs('core-girlphy/' + args.write_to_dir)
+        if not os.path.isdir(args.write_to_dir):
+            os.makedirs(args.write_to_dir)
 
         frame = cv.imread(image, 1)
 
@@ -82,7 +82,6 @@ if args.write_to_dir and args.get_from_dir:
             print("No face Detected, Checking next frame")
 
         for bbox in bboxes:
-            # print(bbox)
             face = frame[max(0,bbox[1]-padding):min(bbox[3]+padding,frame.shape[0]-1),max(0,bbox[0]-padding):min(bbox[2]+padding, frame.shape[1]-1)]
 
             blob = cv.dnn.blobFromImage(face, 1.0, (227, 227), MODEL_MEAN_VALUES, swapRB=False)
@@ -98,10 +97,10 @@ if args.write_to_dir and args.get_from_dir:
             print("Age Output : {}".format(agePreds))
             print("Age : {}, conf = {:.3f}".format(age, agePreds[0].max()))
             if gender == 'Female':
-                shutil.copy2(image, cwd + '/core-girlphy/' + args.write_to_dir)
+                shutil.copy2(image, args.write_to_dir)
                 print("\nDetecting Female in image: %s" % os.path.basename(image))
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
         future_to_url = {executor.submit(scan_gender_age, url): url for url in images_list}
         for future in concurrent.futures.as_completed(future_to_url):
             url = future_to_url[future]

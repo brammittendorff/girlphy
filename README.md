@@ -40,7 +40,7 @@ curl https://raw.githubusercontent.com/minto5050/NSFW-detection/master/retrained
 ### Run
 
 ```
-python3 core-girlphy/detect_nudity.py -d output/ -g directory/
+python3 core-girlphy/detect_nudity.py -d ./output/ -g ./core-girlphy/directory/
 ```
 
 ## Classify age & gender in downloaded images
@@ -63,5 +63,5 @@ Age Net : https://www.dropbox.com/s/xfb20y596869vbb/age_net.caffemodel?dl=0"
 ### Run
 
 ```
-python3 core-girlphy/scan_gender_age.py -d output/ -g directory/
+python core-girlphy/scan_gender_age.py -d ./output/ -g ./core-girlphy/directory/
 ```

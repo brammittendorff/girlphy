@@ -26,18 +26,17 @@ if args.write_to_dir and args.get_from_dir:
     write_to_directory = args.write_to_dir
     get_from_directory = args.get_from_dir
 
-    cwd = os.getcwd()
-    images_list = glob.glob(cwd + '/core-girlphy/' + get_from_directory + '*/*.jpg')
+    images_list = glob.glob(get_from_directory + '*/*.jpg')
 
 
     def detect_nudity(image):
         cwd = os.getcwd()
 
         # create directory
-        if not os.path.isdir('core-girlphy/' + args.write_to_dir):
-            os.makedirs('core-girlphy/' + args.write_to_dir)
+        if not os.path.isdir(args.write_to_dir):
+            os.makedirs(args.write_to_dir)
 
-        if image and not os.path.isfile(cwd + '/core-girlphy/' + args.write_to_dir):
+        if image and not os.path.isfile(args.write_to_dir + os.path.basename(image)):
             image_data = tf.gfile.FastGFile(image, 'rb').read()
             label_lines = [line.rstrip() for line
                             in tf.gfile.GFile(cwd + '/core-girlphy/models/retrained_labels.txt')]
@@ -54,10 +53,10 @@ if args.write_to_dir and args.get_from_dir:
                     human_string = label_lines[node_id]
                     score = predictions[0][node_id]
                     if score > 0.90:
-                        shutil.copy2(image, cwd + '/core-girlphy/' + args.write_to_dir)
+                        shutil.copy2(image, args.write_to_dir)
                         print("\nDetecting nudity in image: %s" % os.path.basename(image))
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
         future_to_url = {executor.submit(detect_nudity, url): url for url in images_list}
         for future in concurrent.futures.as_completed(future_to_url):
             url = future_to_url[future]
