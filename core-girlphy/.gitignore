@@ -2,7 +2,7 @@ urllist.txt
 directory/
 output/*
 models/retrained_graph.pb
-modles/age_net.caffemodel
 models/gender_net.caffemodel
 models/opencv_face_detector_uint8.pb
 models/retrained_graph.pb
+models/age_net.caffemodel

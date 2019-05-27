@@ -19,9 +19,6 @@ args = parser.parse_args()
 
 if args.write_to_dir and args.get_from_dir:
 
-    image_counter = 0
-    scanned_counter = 0
-    # make it safe
     write_to_directory = args.write_to_dir
     get_from_directory = args.get_from_dir
 

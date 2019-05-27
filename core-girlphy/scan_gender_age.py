@@ -19,9 +19,6 @@ args = parser.parse_args()
 
 if args.write_to_dir and args.get_from_dir:
 
-    image_counter = 0
-    scanned_counter = 0
-    # make it safe
     write_to_directory = args.write_to_dir
     get_from_directory = args.get_from_dir
 
@@ -64,7 +61,6 @@ if args.write_to_dir and args.get_from_dir:
         return frameOpencvDnn, bboxes
 
     def scan_gender_age(image):
-        global scanned_counter
         cwd = os.getcwd()
         MODEL_MEAN_VALUES = (78.4263377603, 87.7689143744, 114.895847746)
         ageList = ['(0-2)', '(4-6)', '(8-12)', '(15-20)', '(25-32)', '(38-43)', '(48-53)', '(60-100)']
@@ -75,32 +71,34 @@ if args.write_to_dir and args.get_from_dir:
         if not os.path.isdir(args.write_to_dir):
             os.makedirs(args.write_to_dir)
 
-        frame = cv.imread(image, 1)
+        print(args.write_to_dir + os.path.basename(image))
+        if not os.path.isfile(args.write_to_dir + os.path.basename(image)):
+            frame = cv.imread(image, 1)
 
-        frameFace, bboxes = getFaceBox(faceNet, frame)
-        if not bboxes:
-            print("No face Detected, Checking next frame")
+            frameFace, bboxes = getFaceBox(faceNet, frame)
+            if not bboxes:
+                print("No face Detected, Checking next frame")
 
-        for bbox in bboxes:
-            face = frame[max(0,bbox[1]-padding):min(bbox[3]+padding,frame.shape[0]-1),max(0,bbox[0]-padding):min(bbox[2]+padding, frame.shape[1]-1)]
+            for bbox in bboxes:
+                face = frame[max(0,bbox[1]-padding):min(bbox[3]+padding,frame.shape[0]-1),max(0,bbox[0]-padding):min(bbox[2]+padding, frame.shape[1]-1)]
 
-            blob = cv.dnn.blobFromImage(face, 1.0, (227, 227), MODEL_MEAN_VALUES, swapRB=False)
-            genderNet.setInput(blob)
-            genderPreds = genderNet.forward()
-            gender = genderList[genderPreds[0].argmax()]
-            # print("Gender Output : {}".format(genderPreds))
-            print("Gender : {}, conf = {:.3f}".format(gender, genderPreds[0].max()))
+                blob = cv.dnn.blobFromImage(face, 1.0, (227, 227), MODEL_MEAN_VALUES, swapRB=False)
+                genderNet.setInput(blob)
+                genderPreds = genderNet.forward()
+                gender = genderList[genderPreds[0].argmax()]
+                # print("Gender Output : {}".format(genderPreds))
+                print("Gender : {}, conf = {:.3f}".format(gender, genderPreds[0].max()))
 
-            ageNet.setInput(blob)
-            agePreds = ageNet.forward()
-            age = ageList[agePreds[0].argmax()]
-            print("Age Output : {}".format(agePreds))
-            print("Age : {}, conf = {:.3f}".format(age, agePreds[0].max()))
-            if gender == 'Female':
-                shutil.copy2(image, args.write_to_dir)
-                print("\nDetecting Female in image: %s" % os.path.basename(image))
+                ageNet.setInput(blob)
+                agePreds = ageNet.forward()
+                age = ageList[agePreds[0].argmax()]
+                print("Age Output : {}".format(agePreds))
+                print("Age : {}, conf = {:.3f}".format(age, agePreds[0].max()))
+                if gender == 'Female':
+                    shutil.copy2(image, args.write_to_dir)
+                    print("\nDetecting Female in image: %s" % os.path.basename(image))
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
         future_to_url = {executor.submit(scan_gender_age, url): url for url in images_list}
         for future in concurrent.futures.as_completed(future_to_url):
             url = future_to_url[future]
