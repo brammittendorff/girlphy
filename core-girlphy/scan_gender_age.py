@@ -71,13 +71,12 @@ if args.write_to_dir and args.get_from_dir:
         if not os.path.isdir(args.write_to_dir):
             os.makedirs(args.write_to_dir)
 
-        print(args.write_to_dir + os.path.basename(image))
         if not os.path.isfile(args.write_to_dir + os.path.basename(image)):
             frame = cv.imread(image, 1)
 
             frameFace, bboxes = getFaceBox(faceNet, frame)
             if not bboxes:
-                print("No face Detected, Checking next frame")
+                return "No face Detected, Checking next frame"
 
             for bbox in bboxes:
                 face = frame[max(0,bbox[1]-padding):min(bbox[3]+padding,frame.shape[0]-1),max(0,bbox[0]-padding):min(bbox[2]+padding, frame.shape[1]-1)]

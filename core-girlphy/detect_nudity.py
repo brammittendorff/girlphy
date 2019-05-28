@@ -19,10 +19,18 @@ args = parser.parse_args()
 
 if args.write_to_dir and args.get_from_dir:
 
+    global label_lines
+    cwd = os.getcwd()
     write_to_directory = args.write_to_dir
     get_from_directory = args.get_from_dir
 
     images_list = glob.glob(get_from_directory + '*/*.jpg')
+    label_lines = [line.rstrip() for line
+                    in tf.gfile.GFile(cwd + '/core-girlphy/models/retrained_labels.txt')]
+    with tf.gfile.FastGFile(cwd + '/core-girlphy/models/retrained_graph.pb', 'rb') as f:
+        graph_def = tf.GraphDef()
+        graph_def.ParseFromString(f.read())
+        tf.import_graph_def(graph_def, name='')
 
     def is_grey_scale(img_path):
         img = Image.open(img_path).convert('RGB')
@@ -34,21 +42,27 @@ if args.write_to_dir and args.get_from_dir:
         return True
 
     def detect_nudity(image):
-        cwd = os.getcwd()
-
         # create directory
         if not os.path.isdir(args.write_to_dir):
             os.makedirs(args.write_to_dir)
 
+        store_processed = args.write_to_dir + ".classified.images.txt"
+        if not os.path.isfile(store_processed):
+            open(store_processed, 'a').close()
+
+        processed_file = open(store_processed, 'r+')
+        processed = processed_file.read().split('\n')
+        processed_file.close()
+
         # you can not detect nudity with an grayscale image
-        if image and not os.path.isfile(args.write_to_dir + os.path.basename(image)) and not is_grey_scale(image):
+        if (image and
+            not os.path.isfile(args.write_to_dir + os.path.basename(image)) and
+            not is_grey_scale(image) and image not in processed):
+            # store already scanned images
+            file_open = open(store_processed, 'a+')
+            file_open.write(image + "\n")
+            file_open.close()
             image_data = tf.gfile.FastGFile(image, 'rb').read()
-            label_lines = [line.rstrip() for line
-                            in tf.gfile.GFile(cwd + '/core-girlphy/models/retrained_labels.txt')]
-            with tf.gfile.FastGFile(cwd + '/core-girlphy/models/retrained_graph.pb', 'rb') as f:
-                graph_def = tf.GraphDef()
-                graph_def.ParseFromString(f.read())
-                tf.import_graph_def(graph_def, name='')
             with tf.Session() as sess:
                 softmax_tensor = sess.graph.get_tensor_by_name('final_result:0')
                 predictions = sess.run(softmax_tensor, \
@@ -58,17 +72,22 @@ if args.write_to_dir and args.get_from_dir:
                     human_string = label_lines[node_id]
                     score = predictions[0][node_id]
                     print(score)
-                    if score > 0.96:
+                    if score > 0.94:
                         shutil.copy2(image, args.write_to_dir)
                         print("\nDetecting nudity in image: %s" % os.path.basename(image))
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
-        future_to_url = {executor.submit(detect_nudity, url): url for url in images_list}
-        for future in concurrent.futures.as_completed(future_to_url):
-            url = future_to_url[future]
-            try:
-                future.result()
-            except Exception as exc:
-                print('%r generated an exception: %s' % (url, exc))
-            except KeyboardInterrupt:
-                sys.exit(1)
+    # for each is heavy enough
+    for image in images_list:
+        detect_nudity(image)
+
+    # multithread
+    # with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+    #     future_to_url = {executor.submit(detect_nudity, url): url for url in images_list}
+    #     for future in concurrent.futures.as_completed(future_to_url):
+    #         url = future_to_url[future]
+    #         try:
+    #             future.result()
+    #         except Exception as exc:
+    #             print('%r generated an exception: %s' % (url, exc))
+    #         except KeyboardInterrupt:
+    #             sys.exit(1)
