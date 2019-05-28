@@ -58,16 +58,16 @@ if args.write_to_dir and args.get_from_dir:
         if (image and
             not os.path.isfile(args.write_to_dir + os.path.basename(image)) and
             not is_grey_scale(image) and image not in processed):
-            # store already scanned images
-            file_open = open(store_processed, 'a+')
-            file_open.write(image + "\n")
-            file_open.close()
             image_data = tf.gfile.FastGFile(image, 'rb').read()
             with tf.Session() as sess:
                 softmax_tensor = sess.graph.get_tensor_by_name('final_result:0')
                 predictions = sess.run(softmax_tensor, \
                         {'DecodeJpeg/contents:0': image_data})
                 top_k = predictions[0].argsort()[-len(predictions[0]):][::-1]
+                # store already scanned images
+                file_open = open(store_processed, 'a+')
+                file_open.write(image + "\n")
+                file_open.close()
                 for node_id in top_k:
                     human_string = label_lines[node_id]
                     score = predictions[0][node_id]
@@ -79,15 +79,3 @@ if args.write_to_dir and args.get_from_dir:
     # for each is heavy enough
     for image in images_list:
         detect_nudity(image)
-
-    # multithread
-    # with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
-    #     future_to_url = {executor.submit(detect_nudity, url): url for url in images_list}
-    #     for future in concurrent.futures.as_completed(future_to_url):
-    #         url = future_to_url[future]
-    #         try:
-    #             future.result()
-    #         except Exception as exc:
-    #             print('%r generated an exception: %s' % (url, exc))
-    #         except KeyboardInterrupt:
-    #             sys.exit(1)
